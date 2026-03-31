@@ -11,6 +11,8 @@ import Html5Icon from "./icons/HTML5.astro"
 import JavaIcon from "./icons/Java.astro"
 import CssIcon from "./icons/CSS.astro"
 import AstroIcon from "./icons/Astro.astro"
+import UbuntuIcon from "./icons/Ubuntu.astro"
+import NginxIcon from "./icons/Nginx.astro"
 import WordPressIcon from "./icons/WordPress.astro"
 import PHPIcon from "./icons/PHP.astro"
 import GoogleCalendarIcon from "./icons/GoogleCalendar.astro"
@@ -91,6 +93,8 @@ const projects = await Promise.all(
                          : tag === 'JAVA' ? JavaIcon
                          : tag === 'CSS' ? CssIcon
                          : tag === 'Astro' ? AstroIcon
+                         : tag === 'Ubuntu' ? UbuntuIcon
+                         : tag === 'Nginx' ? NginxIcon
                          : tag === 'NEXT' ? NextJS
                          : tag === 'TAILWIND' ? Tailwind
                          : tag === 'WordPress' ? WordPressIcon
