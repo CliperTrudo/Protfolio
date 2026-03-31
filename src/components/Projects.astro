@@ -5,78 +5,100 @@ import Tailwind from "./icons/Tailwind.astro"
 import Link from "./icons/Link.astro"
 import LinkButton from "./LinkButton.astro"
 
-// importa la API de Content
-import { getCollection } from 'astro:content';
+import { getCollection, render } from 'astro:content';
 
-// Nuevas importaciones de iconos
 import Html5Icon from "./icons/HTML5.astro"
 import JavaIcon from "./icons/Java.astro"
 import CssIcon from "./icons/CSS.astro"
+import AstroIcon from "./icons/Astro.astro"
+import WordPressIcon from "./icons/WordPress.astro"
+import PHPIcon from "./icons/PHP.astro"
+import GoogleCalendarIcon from "./icons/GoogleCalendar.astro"
+import AjaxIcon from "./icons/Ajax.astro"
 
-// carga todos los proyectos (ya validados y tipados)
-const projects = await getCollection('projects');
+const sortedProjects = (await getCollection('projects')).sort((a, b) => {
+  const orderA = a.data.order ?? Number.MAX_SAFE_INTEGER;
+  const orderB = b.data.order ?? Number.MAX_SAFE_INTEGER;
 
-const TAGS = {
-  NEXT: {
-    name: "Next.js",
-    class: "bg-black text-white",
-    icon: NextJS,
-  },
-  TAILWIND: {
-    name: "Tailwind CSS",
-    class: "bg-[#003159] text-white",
-    icon: Tailwind,
-  },
-  // Nuevos tags
-  HTML5: {
-    name: "HTML5",
-    class: "bg-[#e34f26] text-white",
-    icon: Html5Icon,
-  },
-  CSS: {
-    name: "CSS",
-    class: "bg-[#264de4] text-white",
-    icon: CssIcon,
-  },
-  JAVA: {
-    name: "Java",
-    class: "bg-[#007396] text-white",
-    icon: JavaIcon,
-  },
-}
+  if (orderA !== orderB) return orderA - orderB;
+  return a.id.localeCompare(b.id);
+});
 
-
+const projects = await Promise.all(
+  sortedProjects.map(async (project) => {
+    const { Content } = await render(project);
+    return { project, Content };
+  })
+);
 ---
 
-
 <div class="flex flex-col gap-y-16">
-  {projects.map(project => {
-    const { title, description, github, image, tags } = project.data;
+  {projects.map(({ project, Content }, projectIndex) => {
+    const { title, description, github, image, images, tags } = project.data;
+    const gallery = images?.length ? images : image ? [image] : [];
+    const galleryId = `project-gallery-${projectIndex}`;
+
     return (
       <article class="flex flex-col md:flex-row space-y-8 md:space-y-0 md:space-x-8 group">
-        {/* Imagen */}
         <div class="w-full md:w-1/2">
-          <img
-            src={image}
-            alt={title}
-            class="object-cover w-full h-56 md:h-full rounded-xl shadow-lg transition"
-          />
+          {gallery.length > 0 && (
+            <div class="space-y-3" data-gallery={galleryId}>
+              <div class="overflow-hidden rounded-xl bg-slate-100 dark:bg-slate-900/60 border border-gray-200 dark:border-gray-700">
+                <img
+                  src={gallery[0]}
+                  alt={title}
+                  class="project-gallery-main object-contain w-full h-56 md:h-[26rem] rounded-xl shadow-lg transition-opacity duration-300"
+                  data-gallery-main
+                />
+              </div>
+
+              {gallery.length > 1 && (
+                <div class="grid grid-cols-3 gap-3">
+                  {gallery.slice(0, 3).map((shot, index) => (
+                    <button
+                      type="button"
+                      class={`project-gallery-thumb overflow-hidden rounded-lg border shadow-sm transition duration-200 ${
+                        index === 0
+                          ? "border-blue-500 ring-2 ring-blue-500/30"
+                          : "border-gray-200 dark:border-gray-700 hover:border-blue-400"
+                      }`}
+                      data-gallery-thumb
+                      data-image={shot}
+                      data-alt={`${title} captura ${index + 1}`}
+                      aria-label={`Ver captura ${index + 1} de ${title}`}
+                      aria-pressed={index === 0 ? "true" : "false"}
+                    >
+                      <img
+                        src={shot}
+                        alt={`${title} captura ${index + 1}`}
+                        class="object-contain w-full h-24 bg-slate-100 dark:bg-slate-900/60"
+                      />
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
         </div>
 
-        {/* Contenido */}
         <div class="w-full md:w-1/2">
           <h3 class="text-2xl font-bold">{title}</h3>
 
-          {/* Tags */}
           {tags && (
             <ul class="flex flex-wrap gap-2 mt-2">
               {tags.map(tag => {
-                // mapea strings a tu objeto TAGS si lo necesitas,
-                // o muestra directamente el nombre
                 let Icon = tag === 'HTML5' ? Html5Icon
-                         : tag === 'JAVA'  ? JavaIcon
-                         : tag === 'CSS'   ? CssIcon
+                         : tag === 'JAVA' ? JavaIcon
+                         : tag === 'CSS' ? CssIcon
+                         : tag === 'Astro' ? AstroIcon
+                         : tag === 'NEXT' ? NextJS
+                         : tag === 'TAILWIND' ? Tailwind
+                         : tag === 'WordPress' ? WordPressIcon
+                         : tag === 'PHP' ? PHPIcon
+                         : tag === 'Google Calendar' ? GoogleCalendarIcon
+                         : tag === 'AJAX' ? AjaxIcon
                          : null;
+
                 return (
                   <li class="flex items-center gap-2 text-xs bg-gray-200 dark:bg-gray-700 rounded-full py-1 px-2">
                     {Icon && <Icon class="w-4 h-4" />}
@@ -87,9 +109,10 @@ const TAGS = {
             </ul>
           )}
 
-          <p class="mt-4">{description}</p>
+          <div class="mt-4 text-gray-700 dark:text-gray-300 [&_p]:leading-7 [&_p]:text-pretty [&_strong]:font-mono [&_strong]:font-normal [&_strong]:text-yellow-500 dark:[&_strong]:text-yellow-100 [&_em]:italic [&_em]:text-gray-900 dark:[&_em]:text-white">
+            <p set:html={description} />
+          </div>
 
-          {/* Botón GitHub */}
           {github && (
             <footer class="mt-6">
               <LinkButton href={github}>
@@ -104,7 +127,40 @@ const TAGS = {
   })}
 </div>
 
+<script>
+  const galleries = document.querySelectorAll("[data-gallery]");
 
+  galleries.forEach((gallery) => {
+    const mainImage = gallery.querySelector("[data-gallery-main]");
+    const thumbs = gallery.querySelectorAll("[data-gallery-thumb]");
 
+    if (!mainImage || thumbs.length === 0) return;
 
+    thumbs.forEach((thumb) => {
+      thumb.addEventListener("click", () => {
+        const nextImage = thumb.getAttribute("data-image");
+        const nextAlt = thumb.getAttribute("data-alt");
 
+        if (!nextImage || mainImage.getAttribute("src") === nextImage) return;
+
+        mainImage.classList.add("opacity-0");
+
+        window.setTimeout(() => {
+          mainImage.setAttribute("src", nextImage);
+          if (nextAlt) mainImage.setAttribute("alt", nextAlt);
+          mainImage.classList.remove("opacity-0");
+        }, 160);
+
+        thumbs.forEach((item) => {
+          item.setAttribute("aria-pressed", "false");
+          item.classList.remove("border-blue-500", "ring-2", "ring-blue-500/30");
+          item.classList.add("border-gray-200", "dark:border-gray-700");
+        });
+
+        thumb.setAttribute("aria-pressed", "true");
+        thumb.classList.remove("border-gray-200", "dark:border-gray-700");
+        thumb.classList.add("border-blue-500", "ring-2", "ring-blue-500/30");
+      });
+    });
+  });
+</script>
