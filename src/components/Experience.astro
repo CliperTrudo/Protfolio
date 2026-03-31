@@ -1,0 +1,23 @@
+---
+import ExperienceItem from "./ExperienceItem.astro"
+const EXPERIENCE = [
+  {
+    date: "Actualmente...",
+    title: "Programador web",
+    company: "Versus e Learning",
+    description:
+      "Desarrollo integral de sitios web con React, Node.js y Docker, desde la definición de requisitos y el diseño de interfaces hasta el despliegue en producción; optimizo el rendimiento, gestiono integraciones con APIs y automatizo procesos para lograr infraestructuras escalables.",
+    link: "https://versuselearning.com",
+  }
+]
+---
+
+<ol class="relative mt-16">
+  {
+    EXPERIENCE.map((experience) => (
+      <li class="">
+        <ExperienceItem {...experience} />
+      </li>
+    ))
+  }
+</ol>

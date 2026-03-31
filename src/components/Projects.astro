@@ -1,0 +1,110 @@
+---
+import GitHub from "./icons/GitHub.astro"
+import NextJS from "./icons/NextJS.astro"
+import Tailwind from "./icons/Tailwind.astro"
+import Link from "./icons/Link.astro"
+import LinkButton from "./LinkButton.astro"
+
+// importa la API de Content
+import { getCollection } from 'astro:content';
+
+// Nuevas importaciones de iconos
+import Html5Icon from "./icons/HTML5.astro"
+import JavaIcon from "./icons/Java.astro"
+import CssIcon from "./icons/CSS.astro"
+
+// carga todos los proyectos (ya validados y tipados)
+const projects = await getCollection('projects');
+
+const TAGS = {
+  NEXT: {
+    name: "Next.js",
+    class: "bg-black text-white",
+    icon: NextJS,
+  },
+  TAILWIND: {
+    name: "Tailwind CSS",
+    class: "bg-[#003159] text-white",
+    icon: Tailwind,
+  },
+  // Nuevos tags
+  HTML5: {
+    name: "HTML5",
+    class: "bg-[#e34f26] text-white",
+    icon: Html5Icon,
+  },
+  CSS: {
+    name: "CSS",
+    class: "bg-[#264de4] text-white",
+    icon: CssIcon,
+  },
+  JAVA: {
+    name: "Java",
+    class: "bg-[#007396] text-white",
+    icon: JavaIcon,
+  },
+}
+
+
+---
+
+
+<div class="flex flex-col gap-y-16">
+  {projects.map(project => {
+    const { title, description, github, image, tags } = project.data;
+    return (
+      <article class="flex flex-col md:flex-row space-y-8 md:space-y-0 md:space-x-8 group">
+        {/* Imagen */}
+        <div class="w-full md:w-1/2">
+          <img
+            src={image}
+            alt={title}
+            class="object-cover w-full h-56 md:h-full rounded-xl shadow-lg transition"
+          />
+        </div>
+
+        {/* Contenido */}
+        <div class="w-full md:w-1/2">
+          <h3 class="text-2xl font-bold">{title}</h3>
+
+          {/* Tags */}
+          {tags && (
+            <ul class="flex flex-wrap gap-2 mt-2">
+              {tags.map(tag => {
+                // mapea strings a tu objeto TAGS si lo necesitas,
+                // o muestra directamente el nombre
+                let Icon = tag === 'HTML5' ? Html5Icon
+                         : tag === 'JAVA'  ? JavaIcon
+                         : tag === 'CSS'   ? CssIcon
+                         : null;
+                return (
+                  <li class="flex items-center gap-2 text-xs bg-gray-200 dark:bg-gray-700 rounded-full py-1 px-2">
+                    {Icon && <Icon class="w-4 h-4" />}
+                    {tag}
+                  </li>
+                );
+              })}
+            </ul>
+          )}
+
+          <p class="mt-4">{description}</p>
+
+          {/* Botón GitHub */}
+          {github && (
+            <footer class="mt-6">
+              <LinkButton href={github}>
+                <GitHub class="w-6 h-6 mr-1" />
+                Código
+              </LinkButton>
+            </footer>
+          )}
+        </div>
+      </article>
+    );
+  })}
+</div>
+
+
+
+
+
